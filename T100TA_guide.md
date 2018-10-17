@@ -74,6 +74,7 @@ It is time to boot the installation medium!
   * or `numlockx off` in a terminal
 - Optionally, change your keyboard layout
   * `setxkbmap countryCode` (*de* for German, *fr* for French, etc)
+
 In a terminal, input below to enable WIFI!!!
 sudo cp /sys/firmware/efi/efivars/nvram-xxx(press "TAB" key)/lib/firmware/brcm/brcmfmac43241b4-sdio.txt
 sudo modprobe -r brcmfmac
