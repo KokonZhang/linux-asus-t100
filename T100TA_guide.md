@@ -74,15 +74,11 @@ It is time to boot the installation medium!
   * or `numlockx off` in a terminal
 - Optionally, change your keyboard layout
   * `setxkbmap countryCode` (*de* for German, *fr* for French, etc)
-
+In a terminal, input below to enable WIFI!!!
+sudo cp /sys/firmware/efi/efivars/nvram-xxx(press "TAB" key)/lib/firmware/brcm/brcmfmac43241b4-sdio.txt
+sudo modprobe -r brcmfmac
+sudo modprobe brcmfmac
 #### Run the installer
-- In a terminal, run `ubiquity -b`
-
-Note: The flag `-b` is *necessary* in this tutorial. It tells ubiquity not to install a bootloader. Without this flag, ubiquity would crash when trying to install it (Thanks Steven Andrew Mielke!). The bootloader is installed in the section *Install bootloader* below.
-
-#### For novice users
-For novice users, follow [Ubuntu's tutorial](https://tutorials.ubuntu.com/tutorial/tutorial-install-ubuntu-desktop#4). But do **not reboot** at the end of the installation. Press the button *Continue testing* instead.
- When you are done with Ubuntu's tutorial, jump to the section *Install bootloader* in this document.
 
 #### For more advanced users
 For more advanced users, choose the last installation type: *Something else*. And jump to the next section *Partitioning*.
@@ -124,91 +120,12 @@ Note: Alternatively, if you know what you are doing, you can create a new partit
 - Make sure 'Device for bootloader installation' is the right device, probably `/dev/mmcblk2`
 - *Install now*
 - ...Installation...
-- When finished, *Continue testing*
 
-### 7. Install bootloader
-- From now onward, we will run the commands as root. To obtain superuser privileges, execute
- * `sudo -s`.
-- Do *not* use `sudo` for each command, since it fails with some commands (`for` and `>`).
+### 7. Wifi
+sudo cp /sys/firmware/efi/efivars/nvram-xxx(press "TAB" key)/lib/firmware/brcm/brcmfmac43241b4-sdio.txt
+sudo modprobe -r brcmfmac
+sudo modprobe brcmfmac
 
-#### Enable WiFi
-/!\ Theses filenames are for T100TA and T100CHI only. Other T100's (T100TAF and 100H\*) have other brcmfmac numbers. See the troubleshooting section *No WiFi* at the end of this document.
-
-- `cp /sys/firmware/efi/efivars/nvram-* /lib/firmware/brcm/brcmfmac43241b4-sdio.txt` #useful now
-- `cp /sys/firmware/efi/efivars/nvram-* /target/lib/firmware/brcm/brcmfmac43241b4-sdio.txt` #useful after reboot
-- `modprobe -r brcmfmac`
-- `modprobe brcmfmac`
-
-Now, you should be able to connect your ASUS T100 to your network.
-
-#### Chroot steps
-- Find the EFI System Partition. This should be the VFAT partition next to `/target`
-  * `lsblk -f`
-```
-lsblk -f
-NAME         FSTYPE   LABEL       UUID                  MOUNTPOINT
-loop0        squashfs                                   /rofs
-sda
-└─sda1       ntfs     Restore     0A32F68B32F67AD1
-sdb
-└─sdb1       vfat     XUBUNTU_18_ D85F-FC95             /cdrom
-mmcblk2
-├─mmcblk2p1  vfat                 1DA4-A881
-└─mmcblk2p2  ext4                 a1994fa2-ddf3-...ff   /target
-mmcblk2boot0
-mmcblk2boot1
-mmcblk0
-└─mmcblk0p1  vfat                 9016-4EF8             /media/xubuntu/9016-4EF8
-```
-  * In this example, it is `mmcblk2p1`
-  * If you are unsure, check its size with `lsblk`, it should be about 100M.
-- `mount /dev/mmcblk2p1 /target/boot/efi`
-- Then, we have to mount some filesystems before chrooting:
-```
-for dir in /dev /dev/pts /proc /run /sys;
-  do mount --bind "$dir" /target/"$dir";
-done
-```
-- `chroot /target /bin/bash`
-
-#### Bootloader Installation
-- `apt update`
-- `apt install grub-efi-ia32 # grub-pc removed is normal behavior`
-- `grub-install --efi-directory /boot/efi`
-- `update-grub`
-
-- Check `efibootmgr` to see if `ubuntu` is in *BootCurrent* and first in *BootOrder*, as shown below:
-```
- BootCurrent: 0001
- Timeout: 1 seconds
- BootOrder: 0001,0002
- Boot0001* ubuntu
- Boot0002* UEFI: USB stick
-```
-
-### 8. Boot options
-#### Power saving
-- Edit kernel boot options to add `intel_idle.max_cstate=1` before `quiet`
-  * `nano /etc/default/grub`
-```
-GRUB_CMDLINE_LINUX_DEFAULT="intel_idle.max_cstate=1 quiet splash"
-```
-- cstate <= 1 is STABLE in 2018.
-- I don't know if cstate >= 2 is stable.
-
-#### GRUB boot screen
-- If you want the system to boot faster, let's say 1 second after the GRUB boot screen
-```
-GRUB_DEFAULT=0
-GRUB_TIMEOUT=1
-```
-- Update the grub configuration file in `/boot/efi/grub/grub.cfg`
-  * `update-grub`
-
-### 9. Feel free to do other things in the chroot environment
-- When you are done. Just execute `exit`.
-- Before the reboot
-  * `umount /target/boot/efi`
 
 ### 10. Sound
 /!\ T100TA and T100CHI only. Other T100's (T100TAF and T100H\*) has other audio device numbers. You may find files for your device on the [Asus T100 group drive](https://drive.google.com/drive/folders/0B4s5KNXf2Z36VVJDQnY5NEltdmc?tid=0B9C1WK1FQhjfcXNrbzN6djQzajg).
